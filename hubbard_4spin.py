@@ -45,6 +45,8 @@ if __name__ == '__main__':
 
 #============================ THE RUN =========================================
 
+    print("total number of t/U/dt/b loops:", len(DTAUS)*len(BETAS)*len(TS)*len(US))
+
     alf_src = ALF_source()
     for dtau in DTAUS:
         for beta in BETAS:
