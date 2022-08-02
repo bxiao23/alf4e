@@ -12,13 +12,15 @@ if __name__ == '__main__':
 
 #===================== PARAMETER SEARCH SPACE =================================
 
-DTAUS = [0.2, 0.1, 0.05, 0.01]
+DTAUS = [0.1, 0.07, 0.05, 0.01]
 BETAS = [10, 20, 40]
 TS = [0.01, 0.1, 1.0, 2.0]
 US = [4.0, 2.0, 1.0, 0.5, 0.1, -0.1, -0.5, -1.0, -2.0, -4.0]
 MUS = np.linspace(-4,4,21)
 
 #===================== USER-DEFINED PARAMETERS ================================
+
+OVERWRITE_OBS = False
 
 NO_TQDM = True
 
@@ -36,6 +38,9 @@ NFL = 1
 
 #==============================================================================
 
+def savename(t, U, dtau, beta):
+    return f"obs/L2x2_t{t}_U{U}_dt{dtau}_b{beta}.pkl"
+
 if __name__ == '__main__':
 
 #============================ THE RUN =========================================
@@ -46,6 +51,13 @@ if __name__ == '__main__':
             for t in TS:
                 for U in US:
                     print("="*20 + f" STARTING t={t} U={U} dt={dtau} b={beta} " + "="*20)
+                    if os.path.exists(savename(t, U, dtau, beta)):
+                        if not OVERWRITE_OBS:
+                            print("obs exists; skipping")
+                            continue
+                        else:
+                            print("obs exists; overwriting")
+                    obslist = []
                     for mu in tqdm(MUS, disable=NO_TQDM):
                         sim = Simulation(
                             alf_src,
@@ -71,5 +83,7 @@ if __name__ == '__main__':
                         sim.run()
 
                         sim.analysis()
-                        sim.get_obs().to_pickle(f"obs/L2x2_t{t}_U{U}_dt{dtau}_b{beta}")
-                    print("="*20 + " DONE " "="*20 + "\n")
+                        obslist.append(sim.get_obs())
+
+                    pd.concat(obslist).to_pickle(savename(t, U, dtau, beta))
+                    print("="*20 + " DONE " + "="*20 + "\n")
