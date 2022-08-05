@@ -2,6 +2,7 @@ __pycache__/
 ALF_data/
 .ipynb_checkpoints/
 obs/
+obs_remote/
 logs/
 *.pkl
 *.png
