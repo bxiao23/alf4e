@@ -12,11 +12,18 @@ if __name__ == '__main__':
 
 #===================== PARAMETER SEARCH SPACE =================================
 
-DTAUS = [0.1, 0.07, 0.05, 0.01]
-BETAS = [10, 20, 40]
+"""
+DTAUS = [0.02, 0.05, 0.07, 0.1]
+BETAS = [40, 30, 20, 10]
 TS = [0.01, 0.1, 1.0, 2.0]
-US = [4.0, 2.0, 1.0, 0.5, 0.1, -0.1, -0.5, -1.0, -2.0, -4.0]
-MUS = np.linspace(-4,4,21)
+US = [-0.01, -0.1, -0.5, -1.0, -2.0, -4.0]
+MUS = np.linspace(-4,4,11)
+"""
+DTAUS = [0.02]
+BETAS = [10]
+TS = [0.01, 0.1, 1.0, 2.0]
+US = [-0.01, -0.1, -0.5, -1.0, -2.0, -4.0]
+MUS = [0.0]
 
 #===================== USER-DEFINED PARAMETERS ================================
 
@@ -29,8 +36,11 @@ Nf = 4
 rescale_U = True
 use_Mz = False
 
-projector = False
+projector = True
 theta = 20
+
+Nsweep = 40
+Nbin = 5
 
 # don't change these
 NSUN = Nf
@@ -38,8 +48,13 @@ NFL = 1
 
 #==============================================================================
 
-def savename(t, U, dtau, beta):
-    return f"obs/L2x2_t{t}_U{U}_dt{dtau}_b{beta}.pkl"
+def savename(t, U, dtau, beta, mu=None, proj=False, theta=theta):
+    mu_str = f"_mu{mu}" if mu is not None else ""
+    proj_str = f"_pth{theta}" if proj else ""
+    pref = f"L{Lx}x{Ly}"
+    if mu is not None:
+        pref = "singlepoint_" + pref
+    return f"obs/{pref}_t{t}_U{U}{mu_str}_dt{dtau}_b{beta}{proj_str}.pkl"
 
 if __name__ == '__main__':
 
@@ -78,6 +93,8 @@ if __name__ == '__main__':
                                 "Mz": use_Mz,
                                 "Dtau": dtau,
                                 "beta": beta,
+                                "NSweep": Nsweep,
+                                "NBin": Nbin,
                             },
                             machine="GNU"
                         )
@@ -87,5 +104,12 @@ if __name__ == '__main__':
                         sim.analysis()
                         obslist.append(sim.get_obs())
 
-                    pd.concat(obslist).to_pickle(savename(t, U, dtau, beta))
+                    snkwargs = {"t": t,
+                                "U": U,
+                                "dtau": dtau,
+                                "beta": beta,
+                                "proj": projector,
+                                "theta": theta,
+                                "mu": None if len(MUS) > 1 else MUS[0]}
+                    pd.concat(obslist).to_pickle(savename(**snkwargs))
                     print("="*20 + " DONE " + "="*20 + "\n")
