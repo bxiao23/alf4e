@@ -28,4 +28,7 @@ done=$(grep -e 'STARTING' "$fn" | awk '{print $3"\t"$4"\t"$5"\t"$6}')
 if [ -z "${count_only-}" ]; then
     echo "$done"
 fi
-echo "completed "$(echo "$done" | wc -l)
+last_chem=$(grep -Eoe 'chem=-?[[:digit:]]*\.[[:digit:]]*' "$fn" | tail -1)
+last_chem=${last_chem:5}
+echo "last mu: $last_chem"
+echo "completed t/U/dtau/beta blocks: "$(echo "$done" | wc -l)
