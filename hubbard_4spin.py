@@ -68,7 +68,10 @@ if __name__ == '__main__':
             for t in TS:
                 for U in US:
                     print("="*20 + f" STARTING t={t} U={U} dt={dtau} b={beta} " + "="*20)
-                    if os.path.exists(savename(t, U, dtau, beta)):
+                    save = savename(t=t, U=U, dtau=dtau, beta=beta,
+                                    proj=projector, theta=theta,
+                                    mu=(None if len(MUS) > 1 else MUS[0]))
+                    if os.path.exists(save):
                         if not OVERWRITE_OBS:
                             print("obs exists; skipping")
                             continue
@@ -104,12 +107,5 @@ if __name__ == '__main__':
                         sim.analysis()
                         obslist.append(sim.get_obs())
 
-                    snkwargs = {"t": t,
-                                "U": U,
-                                "dtau": dtau,
-                                "beta": beta,
-                                "proj": projector,
-                                "theta": theta,
-                                "mu": None if len(MUS) > 1 else MUS[0]}
-                    pd.concat(obslist).to_pickle(savename(**snkwargs))
+                    pd.concat(obslist).to_pickle(savename(save))
                     print("="*20 + " DONE " + "="*20 + "\n")
