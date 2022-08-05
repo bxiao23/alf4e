@@ -10,7 +10,7 @@ for fn in os.listdir(OBS_DIR):
     if fn == SAVENAME:
         continue
     if fn.split(".")[-1] == "pkl":
-        dfs.append(pd.read_pickle(fn))
+        dfs.append(pd.read_pickle(f"{OBS_DIR}/{fn}"))
 
 df = pd.concat(dfs)
 df.to_pickle(SAVENAME)
