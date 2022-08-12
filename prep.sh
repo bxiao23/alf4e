@@ -5,6 +5,10 @@ case "$1" in
         ALF_HOME="/home/bxiao23/alf/ALF-master"
         PYALF_HOME="/home/bxiao23/alf/pyALF-master"
         ;;
+    "r2"|"roch2")
+        ALF_HOME="/home/bxiao23/alf/ALF-master2"
+        PYALF_HOME="/home/bxiao23/alf/pyALF-master"
+        ;;
     *)
         ALF_HOME="/home/ganzfeld/fourelectron/alf/ALF-master"
         PYALF_HOME="/home/ganzfeld/fourelectron/alf/pyALF-master"
