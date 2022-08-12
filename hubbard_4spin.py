@@ -1,3 +1,4 @@
+import time
 import itertools
 import os
 import sys
@@ -12,35 +13,49 @@ if __name__ == '__main__':
 
 #===================== PARAMETER SEARCH SPACE =================================
 
-"""
-DTAUS = [0.02, 0.05, 0.07, 0.1]
-BETAS = [40, 30, 20, 10]
-TS = [0.01, 0.1, 1.0, 2.0]
-US = [-0.01, -0.1, -0.5, -1.0, -2.0, -4.0]
-MUS = np.linspace(-4,4,11)
-"""
-DTAUS = [0.02]
-BETAS = [10]
-TS = [0.01, 0.1, 1.0, 2.0]
-US = [-0.01, -0.1, -0.5, -1.0, -2.0, -4.0]
-MUS = [0.0]
+PARAMS = 1
 
-#===================== USER-DEFINED PARAMETERS ================================
+if PARAMS == 1:
+    DTAUS = [0.02]
+    BETAS = [20]
+    TS = [1.0]
+    US = [-1.0]
+    MUS = [0.0, -1.0, -2.0]
+    PHI_VALS = np.linspace(0,1,21,endpoint=True).tolist()
+    Nsweep = 150
+    Nbin = 15
+    Lx = Ly = 4
+    Nf = 2
+elif PARAMS == 2:
+    DTAUS = [0.02]
+    BETAS = [20]
+    TS = [1.0]
+    US = [-1.0, -2.0, -3.0]
+    MUS = [-1.0, -1.25, -1.5, -1.75, -2.0, -2.25, -2.5]
+    PHI_VALS = np.linspace(0,1,17,endpoint=True).tolist()
+    Nsweep = 150
+    Nbin = 15
+    Lx = Ly = 4
+    Nf = 4
+else:
+    raise RuntimeError()
+
+#PHIS = [(phi, 0) for phi in PHI_VALS] + [(phi, phi) for phi in PHI_VALS]
+PHIS = [(phi, phi) for phi in PHI_VALS]
+
+tot_runs = np.prod([len(l) for l in (DTAUS, BETAS, TS, US, MUS, PHIS)])
+
+#======================== OTHER PARAMETERS ===================================
 
 OVERWRITE_OBS = False
 
 NO_TQDM = True
 
-Lx = Ly = 2
-Nf = 4
 rescale_U = True
 use_Mz = False
 
-projector = True
+projector = False
 theta = 20
-
-Nsweep = 40
-Nbin = 5
 
 # don't change these
 NSUN = Nf
@@ -48,64 +63,86 @@ NFL = 1
 
 #==============================================================================
 
-def savename(t, U, dtau, beta, mu=None, proj=False, theta=theta):
-    mu_str = f"_mu{mu}" if mu is not None else ""
-    proj_str = f"_pth{theta}" if proj else ""
-    pref = f"L{Lx}x{Ly}"
-    if mu is not None:
-        pref = "singlepoint_" + pref
-    return f"obs/{pref}_t{t}_U{U}{mu_str}_dt{dtau}_b{beta}{proj_str}.pkl"
+def savename(t, U, dtau, beta, mu, proj=False, theta=theta, prefix=None,
+                phi_x=None, phi_y=None):
+    if prefix is None:
+        out = ""
+    else:
+        out = prefix
+        if out[-1] != "/": out += "/"
+    out += f"L{Lx}x{Ly}_t{t}_U{U}_mu{mu}"
+    if proj: out += f"_pth{theta}"
+
+    if phi_x is not None: out += f"_phix{phi_x}"
+    if phi_y is not None: out += f"_phiy{phi_y}"
+
+    return out + ".pkl"
 
 if __name__ == '__main__':
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--obs_prefix", type=str, default="obs")
+    parser.add_argument("--skip_run", action="store_true")
+    args = parser.parse_args()
+
 #============================ THE RUN =========================================
 
-    print("total number of t/U/dt/b loops:", len(DTAUS)*len(BETAS)*len(TS)*len(US))
+    print(f"Nsweep, Nbin: {Nsweep}, {Nbin}")
+
+    print("total number of runs:", tot_runs)
 
     alf_src = ALF_source()
+    start = time.time()
     for dtau in DTAUS:
         for beta in BETAS:
             for t in TS:
                 for U in US:
-                    print("="*20 + f" STARTING t={t} U={U} dt={dtau} b={beta} " + "="*20)
-                    save = savename(t=t, U=U, dtau=dtau, beta=beta,
-                                    proj=projector, theta=theta,
-                                    mu=(None if len(MUS) > 1 else MUS[0]))
-                    if os.path.exists(save):
-                        if not OVERWRITE_OBS:
-                            print("obs exists; skipping")
-                            continue
-                        else:
-                            print("obs exists; overwriting")
-                    obslist = []
                     for mu in tqdm(MUS, disable=NO_TQDM):
-                        sim = Simulation(
-                            alf_src,
-                            "Hubbard",
-                            {
-                                "Lattice_type": "Square",
-                                "L1": Lx,
-                                "L2": Ly,
-                                "ham_u": (U * Nf / 2 if rescale_U else U),
-                                "ham_chem": mu,
-                                "ham_T": t,
-                                "Projector": projector,
-                                "Theta": theta,
-                                "N_SUN": NSUN,
-                                "N_FL": NFL,
-                                "Mz": use_Mz,
-                                "Dtau": dtau,
-                                "beta": beta,
-                                "NSweep": Nsweep,
-                                "NBin": Nbin,
-                            },
-                            machine="GNU"
-                        )
+                        for phi_x, phi_y in PHIS:
+                            desc = f"t={t} U={U} mu={mu} dt={dtau} b={beta} phi=({phi_x},{phi_y})"
+                            print("="*20, "STARTING", desc, "="*20)
+                            print(f"elapsed time from run start: {time.time() - start:.1f} s")
+                            obslist = []
+                            save = savename(t=t, U=U, dtau=dtau, beta=beta,
+                                        proj=projector, theta=theta,
+                                        mu=mu, phi_x=phi_x, phi_y=phi_y,
+                                        prefix=args.obs_prefix)
+                            print("result file:", save)
+                            if os.path.exists(save):
+                                if not OVERWRITE_OBS:
+                                    print("obs exists; skipping")
+                                    continue
+                                else:
+                                    print("obs exists; overwriting")
+                            sim = Simulation(
+                                alf_src,
+                                "Hubbard",
+                                {
+                                    "Lattice_type": "Square",
+                                    "L1": Lx,
+                                    "L2": Ly,
+                                    "ham_u": (U * Nf / 2 if rescale_U else U),
+                                    "ham_chem": mu,
+                                    "ham_T": t,
+                                    "Projector": projector,
+                                    "Theta": theta,
+                                    "N_SUN": NSUN,
+                                    "N_FL": NFL,
+                                    "Mz": use_Mz,
+                                    "Dtau": dtau,
+                                    "beta": beta,
+                                    "NSweep": Nsweep,
+                                    "NBin": Nbin,
+                                    "Phi_X": phi_x,
+                                    "Phi_Y": phi_y,
+                                },
+                                machine="GNU"
+                            )
 
-                        sim.run()
+                            if not args.skip_run:
+                                sim.run()
+                                sim.analysis()
 
-                        sim.analysis()
-                        obslist.append(sim.get_obs())
+                            sim.get_obs().to_pickle(save)
 
-                    pd.concat(obslist).to_pickle(savename(save))
-                    print("="*20 + " DONE " + "="*20 + "\n")
+                        print("="*20 + " DONE " + "="*20 + "\n")

@@ -24,11 +24,16 @@ if [ "${fn:0:1}" == "-" ]; then
     exit 1
 fi
 
-done=$(grep -e 'STARTING' "$fn" | awk '{print $3"\t"$4"\t"$5"\t"$6}')
+# as of now intended for two formats:
+#   t=t U=U mu=mu dt=dtau b=beta phi=phi  (new format; total of 9 fields)
+#   t=t U=U dt=dtau b=beta                (old format; total of 7 fields)
+prog='{if (NF == 9) {print $3"\t"$4"\t"$5"\t"$6"\t"$7"\t"$8} else {print $3"\t"$4"\t"$5"\t"$6}}'
+
+done=$(grep -e 'STARTING' "$fn" | awk "$prog")
 if [ -z "${count_only-}" ]; then
     echo "$done"
 fi
-last_chem=$(grep -Eoe 'chem=-?[[:digit:]]*\.[[:digit:]]*' "$fn" | tail -1)
-last_chem=${last_chem:5}
-echo "last mu: $last_chem"
-echo "completed t/U/dtau/beta blocks: "$(echo "$done" | wc -l)
+#last_chem=$(grep -Eoe 'chem=-?[[:digit:]]*\.[[:digit:]]*' "$fn" | tail -1)
+#last_chem=${last_chem:5}
+#echo "last mu: $last_chem"
+echo "completed runs: "$(( $(echo "$done" | wc -l) - 1 ))
