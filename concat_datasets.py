@@ -1,16 +1,23 @@
 import os
 import pandas as pd
 
-OBS_DIR = "obs"
+import argparse
 
-SAVENAME = f"{OBS_DIR}/L2x2_mu_data_aggregate.pkl"
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--obs_prefix", type=str, default="obs")
+    parser.add_argument("--savename", type=str,
+                        default="L2x2_mu_data_aggregate.pkl")
+    args = parser.parse_args()
 
-dfs = []
-for fn in os.listdir(OBS_DIR):
-    if fn == SAVENAME:
-        continue
-    if fn.split(".")[-1] == "pkl":
-        dfs.append(pd.read_pickle(f"{OBS_DIR}/{fn}"))
+    SAVENAME = f"{args.obs_prefix}/{args.savename}"
 
-df = pd.concat(dfs)
-df.to_pickle(SAVENAME)
+    dfs = []
+    for fn in os.listdir(args.obs_prefix):
+        if fn == SAVENAME:
+            continue
+        if fn.split(".")[-1] == "pkl":
+            dfs.append(pd.read_pickle(f"{args.obs_prefix}/{fn}"))
+
+    df = pd.concat(dfs)
+    df.to_pickle(SAVENAME)
