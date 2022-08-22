@@ -23,9 +23,10 @@ if __name__ == "__main__":
             self.c += 1
             return out
 
-    param_keys = ["t", "U", "mu", "beta", "dtau", "phi_x", "phi_y"]
+    param_keys = ["t", "U", "mu", "beta", "dtau", "phi_x", "phi_y",
+                        "Lx", "Ly"]
     param_names = ["ham_t", "ham_u", "ham_chem", "beta", "dtau",
-                    "phi_x", "phi_y"]
+                    "phi_x", "phi_y", "l1", "l2"]
 
     observables = ["N", "E", "T", "V"]
     obs_names_base = ["Part", "Ener", "Kin", "Pot"]
