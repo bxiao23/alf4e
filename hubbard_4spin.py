@@ -13,9 +13,11 @@ if __name__ == '__main__':
 
 #===================== PARAMETER SEARCH SPACE =================================
 
-PARAMS = 1
+PARAMS = 3
+Lsel = 12        # currently only used when PARAMS == 3
 
 if PARAMS == 1:
+    # 2-fermion check run for the first phi sweep
     DTAUS = [0.02]
     BETAS = [20]
     TS = [1.0]
@@ -27,10 +29,36 @@ if PARAMS == 1:
     Lx = Ly = 4
     Nf = 2
 elif PARAMS == 2:
+    # in-depth mu sweep at high U
     DTAUS = [0.02]
     BETAS = [20]
     TS = [1.0]
-    US = [-1.0, -2.0, -3.0]
+    US = [-5.0, -7.0, -9.0]
+#    MUS = [-1.0, -1.5, -2.0, -2.5]
+    MUS = [-1.0, -1.25, -1.5, -1.75, -2.0, -2.25, -2.5]
+    PHI_VALS = np.linspace(0,1,17,endpoint=True).tolist()
+    Nsweep = 150
+    Nbin = 15
+    Lx = Ly = 4
+    Nf = 4
+elif PARAMS == 3:
+    # t = -U = 1.0 and mu = -2.0 with large lattice size
+    DTAUS = [0.04]
+    BETAS = [20]
+    TS = [1.0]
+    US = [-1.0]
+    MUS = [-2.0]
+    PHI_VALS = np.linspace(0,1,17,endpoint=True).tolist()
+    Nsweep = 60
+    Nbin = 6
+    Lx = Ly = Lsel
+    Nf = 4
+elif PARAMS == 4:
+    # in-depth mu sweep at lower U
+    DTAUS = [0.04]
+    BETAS = [20]
+    TS = [1.0]
+    US = [-0.5, -1.0, -2.0]
     MUS = [-1.0, -1.25, -1.5, -1.75, -2.0, -2.25, -2.5]
     PHI_VALS = np.linspace(0,1,17,endpoint=True).tolist()
     Nsweep = 150
