@@ -4,6 +4,7 @@ ALF_data/
 obs/
 obs_remote/
 logs/
+plots/
 *.pkl
 *.png
 *.log
