@@ -1,0 +1,29 @@
+# t = -U = 1.0 and mu = -2.0 with large lattice size
+# original python code:
+#    DTAUS = [0.04]
+#    BETAS = [20]
+#    TS = [1.0]
+#    US = [-1.0]
+#    MUS = [-2.0]
+#    PHI_VALS = np.linspace(0,1,17,endpoint=True).tolist()
+#    Nsweep = 60
+#    Nbin = 6
+#    Lx = Ly = Lsel
+#    Nf = 4
+
+## loopable params
+dtaus: 0.04
+betas: 20
+ts: 1.0
+Us: -1.0
+mus: -2.0
+phis: linspace 0 1 17
+
+## scalar params
+Nsweep: 60
+Nbin: 6
+Nf: 4
+
+## change this to change lattice size
+Lx: 10
+Ly: 10

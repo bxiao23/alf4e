@@ -1,0 +1,28 @@
+# example of a run config file.
+
+## loopable params: lists of floats. Formats:
+# - as an ordinary list of numbers
+# - as a single int or float (autoconverted to singleton list)
+# - as the string "linspace <start> <stop> <number>"
+# allowed formats are showcased below
+dtaus: [0.02]
+betas: 20
+ts: 1.0
+Us: [-1.0, -2.0]
+mus: linspace 0 1 11
+phis: linspace 0 1 17
+
+## scalar params: other single-valued inputs.
+Nsweep: 100
+Nbin: 10
+Lx: 4
+Ly: 4
+Nf: 4
+
+## optional params (values below are the defaults)
+overwrite_obs: True
+no_tqdm: True
+rescale_U: True
+use_Mz: False
+projector: False
+theta: 20
