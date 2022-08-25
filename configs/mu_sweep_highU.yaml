@@ -20,8 +20,9 @@ mus: [-1.0, -1.25, -1.5, -1.75, -2.0, -2.25, -2.5]
 phis: linspace 0 1 17
 
 ## scalar params
-Nsweep: 150
-Nbin: 15
+Nsweep: 60
+Nbin: 6
 Lx: 4
 Ly: 4
 Nf: 4
+Nwrap: 5
