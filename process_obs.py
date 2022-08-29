@@ -40,17 +40,19 @@ if __name__ == "__main__":
                             help="do not rename rows of processed dataset")
     args = parser.parse_args()
 
+    args.obs_prefix = add_affixes(args.obs_prefix, suffix="/")
+
     # ===== dataset aggregation =====
     dfs = []
     for fn in os.listdir(args.obs_prefix):
         if is_agg_or_ext(fn):
             continue
         if fn.split(".")[-1] == "pkl":
-            dfs.append(pd.read_pickle(f"{args.obs_prefix}/{fn}"))
+            dfs.append(pd.read_pickle(f"{args.obs_prefix}{fn}"))
 
     df = pd.concat(dfs)
     if args.save_agg is not None:
-        df.to_pickle(f"{args.obs_prefix}/{regularize_agg_fn(args.save_agg)}")
+        df.to_pickle(f"{args.obs_prefix}{regularize_agg_fn(args.save_agg)}")
 
     # ===== dataset processing/extraction =====
 
@@ -88,4 +90,4 @@ if __name__ == "__main__":
     df["rescale"] = (not args.no_rescale)
 
     if args.save_extr is not None:
-        df.to_pickle(f"{args.obs_prefix}/{regularize_extr_fn(args.save_extr)}")
+        df.to_pickle(f"{args.obs_prefix}{regularize_extr_fn(args.save_extr)}")
