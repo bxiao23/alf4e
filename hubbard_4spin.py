@@ -1,4 +1,5 @@
 import time
+import datetime
 import itertools
 import os
 import sys
@@ -19,6 +20,8 @@ DEFAULTS = {
                 "use_Mz": False,
                 "projector": False,
                 "theta": 20,
+                "N_auto": 0,
+                "Nwrap": 10,
             }
 
 def regularize_loopable_param(param, scalar_type=float):
@@ -81,6 +84,9 @@ if __name__ == '__main__':
     parser.add_argument("config", type=str)
     args = parser.parse_args()
 
+    print("RUN STARTED AT",
+            datetime.datetime.today().strftime("%Y-%m-%d @ %H:%M:%S"))
+
     # load the config
     config = parse_config(args.config)
     NSUN = config["Nf"]
@@ -104,6 +110,7 @@ if __name__ == '__main__':
 
     alf_src = ALF_source()
     start = time.time()
+    data_dirs = []
     for dtau in config["dtaus"]:
         for beta in config["betas"]:
             for t in config["ts"]:
@@ -144,11 +151,14 @@ if __name__ == '__main__':
                                     "beta": beta,
                                     "NSweep": config["Nsweep"],
                                     "NBin": config["Nbin"],
+                                    "N_auto": config["N_auto"],
+                                    "Nwrap": config["Nwrap"],
                                     "Phi_X": phi_x,
                                     "Phi_Y": phi_y,
                                 },
                                 machine="GNU"
                             )
+                            data_dirs.append(sim.sim_dir)
 
                             if not args.skip_run:
                                 sim.run()
@@ -157,3 +167,7 @@ if __name__ == '__main__':
                             sim.get_obs().to_pickle(save)
 
                         print("="*20 + " DONE " + "="*20 + "\n")
+
+    print("overall run complete; list of generated directories follows:")
+    for d in data_dirs:
+        print(d)
