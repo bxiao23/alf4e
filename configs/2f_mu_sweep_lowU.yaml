@@ -1,0 +1,17 @@
+# in-depth mu sweep at low U
+
+## loopable params
+dtaus: 0.04
+betas: 20
+ts: 1.0
+Us: [-0.5, -1.0, -2.0, -3.0]
+mus: [0.0, -0.5, -1.0, -1.25, -1.5, -1.75, -2.0, -2.25, -2.5]
+phis: linspace 0 1 17
+
+## scalar params
+Nsweep: 100
+Nbin: 10
+Lx: 4
+Ly: 4
+Nf: 2
+N_auto: 5

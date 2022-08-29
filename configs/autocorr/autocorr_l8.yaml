@@ -1,0 +1,19 @@
+# quick run for testing
+
+## loopable params
+dtaus: 0.02
+betas: 20
+ts: 1.0
+Us: -1.0
+mus: linspace -2.0 0.0 3
+phis: linspace 0.0 1.0 3
+
+## scalar params
+Nsweep: 1
+Nbin: 1000
+Lx: 8
+Ly: 8
+Nf: 4
+
+## optional params (just to test that they work)
+N_auto: 500

@@ -20,10 +20,10 @@ mus: -2.0
 phis: linspace 0 1 17
 
 ## scalar params
-Nsweep: 60
-Nbin: 6
+Nsweep: 40
+Nbin: 15
 Nf: 4
 
 ## change this to change lattice size
-Lx: 10
-Ly: 10
+Lx: 8
+Ly: 8

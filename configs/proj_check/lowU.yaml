@@ -1,0 +1,20 @@
+# in-depth mu sweep at high U
+# original python code:
+
+## loopable params
+dtaus: 0.04
+betas: 20
+ts: [0.01, 0.1, 1.0, 2.0]
+Us: [-0.01, -0.1, -0.5]
+mus: [2.0, 1.0, 0.0, -1.0, -2.0]
+phis: linspace 0 1 13
+
+## scalar params
+projector: True
+theta: 20
+Nsweep: 60
+Nbin: 6
+Lx: 4
+Ly: 4
+Nf: 4
+N_auto: 5
