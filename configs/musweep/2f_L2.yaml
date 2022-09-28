@@ -1,0 +1,26 @@
+# example of a run config file.
+
+## loopable params: lists of floats. Formats:
+dtaus: 0.02
+betas: 20
+ts: 1.0
+Us: [-1.0, -3.0, -4.0]
+mus: [0.0, -1.0, -2.0]
+phis: linspace 0 1 11
+
+## scalar params: other single-valued inputs.
+Nsweep: 400
+Nbin: 10
+Lx: 2
+Ly: 2
+Nf: 2
+
+## optional params (values below are the defaults)
+overwrite_obs: True
+no_tqdm: True
+rescale_U: True
+use_Mz: False
+projector: False
+theta: 0
+xy_flux: False
+N_skip: 5

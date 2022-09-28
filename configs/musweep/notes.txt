@@ -1,0 +1,6 @@
+Still trying to do autocorr.
+With 1000 runs, particle number autocorrelations failed to show exponential decay in any meaningful form, and also predicts avg. N around 6, which a grand-canonical ED calculation shows is definitely not the case.
+
+Tried an alternative approach: 200 sweeps/bin with 10 bins; dropping the first 5 bins led to correct value of <N>. Somewhat disturbing implications -- seems equilibration (at least wrt N) takes a while.
+
+OTOH, seems E autocorr has decent properties with short autocorrelation time, and even with <N> = 6 the <E> values are quite close to the ED-predicted values.

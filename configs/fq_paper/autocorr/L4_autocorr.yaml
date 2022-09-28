@@ -1,0 +1,25 @@
+# example of a run config file.
+
+## loopable params
+dtaus: 0.02
+betas: 10
+ts: 1.0
+Us: -4.0
+mus: 0.0
+phis: linspace 0 1 17
+
+## scalar params
+Nsweep: 1
+Nbin: 5000
+Lx: 4
+Ly: 4
+Nf: 2
+
+## optional params
+N_auto: 5000
+overwrite_obs: True
+no_tqdm: True
+rescale_U: True
+use_Mz: False
+projector: True
+theta: 20.01
