@@ -24,6 +24,17 @@ if [ "${fn:0:1}" == "-" ]; then
     exit 1
 fi
 
+if ! [ -f "$fn" ]; then
+    if [ -f "logs/$fn" ]; then
+        fn="logs/$fn"
+    else if [ -f "logs/$fn.log" ]; then
+        fn="logs/$fn.log"
+    else if [ -f "$fn.log" ]; then
+        fn="$fn.log"
+    fi; fi; fi
+fi
+echo "file: $fn"
+
 # as of now intended for two formats:
 #   t=t U=U mu=mu dt=dtau b=beta phi=phi  (new format; total of 9 fields)
 #   t=t U=U dt=dtau b=beta                (old format; total of 7 fields)
