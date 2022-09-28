@@ -2,6 +2,8 @@ import os
 import argparse
 import pandas as pd
 
+NF_IS_NSUN = True       # whether flavors are incorporated via N_SUN or N_FL
+
 def is_agg_or_ext(filename):
     return (filename[:2] == "AG" or filename[:2] == "EX")
 
@@ -35,10 +37,15 @@ if __name__ == "__main__":
     parser.add_argument("--save_extr", type=str,
                             help="where to save processed dataset")
     parser.add_argument("--no_rescale", action="store_true")
-    parser.add_argument("--Nf", type=int, default=4)
+    parser.add_argument("--Nf", type=int)
+    parser.add_argument("--shift_mu", type=float,
+                            help="apply an add'l shift to mu")
     parser.add_argument("--no_seq", action="store_true",
                             help="do not rename rows of processed dataset")
     args = parser.parse_args()
+
+    if args.Nf is not None:
+        print("notice: args.Nf no longer being used; reading Nf directly from dataframe instead")
 
     args.obs_prefix = add_affixes(args.obs_prefix, suffix="/")
 
@@ -57,9 +64,10 @@ if __name__ == "__main__":
     # ===== dataset processing/extraction =====
 
     param_keys = ["t", "U", "mu", "beta", "dtau", "phi_x", "phi_y",
-                        "Lx", "Ly"]
+                        "Lx", "Ly", "Nf"]
     param_names = ["ham_t", "ham_u", "ham_chem", "beta", "dtau",
-                    "phi_x", "phi_y", "l1", "l2"]
+                    "phi_x", "phi_y", "l1", "l2",
+                    "n_sun" if NF_IS_NSUN else "n_fl"]
 
     observables = ["N", "E", "T", "V"]
     obs_names_base = ["Part", "Ener", "Kin", "Pot"]
@@ -86,7 +94,10 @@ if __name__ == "__main__":
         s = Sequence()
         df = df.rename(s.bump, axis=0)
     if not args.no_rescale:
-        df["U"] *= 2 / args.Nf
+#        df["U"] *= 2 / args.Nf
+        df["U"] *= 2 / df["Nf"]
+    if args.shift_mu is not None:
+        df["mu"] += args.shift_mu
     df["rescale"] = (not args.no_rescale)
 
     if args.save_extr is not None:
