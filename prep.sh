@@ -4,9 +4,9 @@ case "$1" in
     "r"*)
         PYALF_HOME="/home/bxiao23/alf/pyALF-master"
         tag=${1:1}
-        # for compatibility; might change someday
-        if [ "$tag" == "1" ]; then
-            ALF_HOME="/home/bxiao23/alf/ALF-master"
+        # for compatibility
+        if [ -z "$tag" ]; then
+            ALF_HOME="/home/bxiao23/alf/ALF-master1"
         else
             ALF_HOME="/home/bxiao23/alf/ALF-master${tag}"
         fi
