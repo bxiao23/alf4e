@@ -22,7 +22,54 @@ def parse_dens_sel(s):
         return (False, int(s.strip().split("=")[1]))
     raise ValueError("failed to parse density selection spec")
 
-def plot_NE_vert_stack(df, param,  param_str=None, dens=True,
+def plot_common_E(df, param, param_str=None, sel=None,
+                    normalize_E=False, base_phi=None, errorbars=True,
+                    plot_reflected=False,
+                    figsize=FIGSIZE):
+    if param_str is None:
+        param_str = str(param)
+    fig, ax = plt.subplots(figsize=figsize)
+    if sel is not None:
+        for key, val in sel.items():
+            df = df[df[key] == val]
+    Ps = sorted(set(df[param]))
+    for P in Ps:
+        s = df.loc[df[param] == P]
+        if base_phi is None:
+            s.loc[:,"E"] -= s["E"].min()
+        else:
+            phi_idx = s[s["phi_x"] == base_phi].index.tolist()[0]
+            base_E = s.loc[phi_idx]["E"]
+            s.loc[:,"E"] = s.loc[:,"E"] - base_E
+        print(s[["phi_x", param, "E"]])
+        if normalize_E:
+            s.loc[:,"E"] /= s["E"].max()
+        s = s.sort_values(by="phi_x")
+        yerr = s["dE"] if errorbars else 0
+        ax.errorbar(x=s["phi_x"], y=s["E"], yerr=yerr,
+                            label=f"{param_str} = {P}",
+                            marker="o")
+
+        # symmetry check
+        if plot_reflected:
+            s = s[s["phi_x"] <= 0.5]
+            s["phi_x"] = 1 - s["phi_x"]
+            yerr = s["dE"] if errorbars else 0
+            ax.errorbar(x=s["phi_x"], y=s["E"], yerr=yerr,
+                                label=f"{param_str} = {P} reflected",
+                                marker="o")
+
+        ax.set_xlabel("φ")
+        ylabel = "E"
+        if base_phi is not None:
+            ylabel += f" - E[phi={base_phi}]"
+        if normalize_E:
+            ylabel += f" (normalized)"
+        ax.set_ylabel(ylabel)
+    plt.legend()
+    return fig, ax
+
+def plot_NE_vert_stack(df, param, Nf=4, param_str=None, dens=True,
                          draw_dens_lines=True, figsize=FIGSIZE):
 
     if param_str is None:
@@ -48,7 +95,7 @@ def plot_NE_vert_stack(df, param,  param_str=None, dens=True,
         axs[i].set_ylabel("E")
         axN = axs[i].twinx()
         if dens:
-            Ys = s["N"] / (args.Nf * s.Lx * s.Ly)
+            Ys = s["N"] / (Nf * s.Lx * s.Ly)
             axN.set_ylabel("n")
             axN.set_ylim((0, max(NTICKS)*1.08))
             axN.set_yticks(NTICKS, labels=NTICKLABELS)
@@ -73,33 +120,13 @@ if __name__ == "__main__":
     parser.add_argument("--savename", type=str,
                             help="filename for saving plot")
     parser.add_argument("--mode", type=str, default="stack_mu",
-                            help="plot mode")
-    parser.add_argument("--dens_sel", type=str,
-                            help="select a value of N or mu " + \
-                                 "(mostly for flux_vs_U mode)")
-    parser.add_argument("--Nf", type=int, default=4,
-                            help="number of fermion flavors")
-    # TODO: automatically read from DataFrame when possible
-    parser.add_argument("--L_sel", type=int, nargs=2,
-                            help="lattice size")
-    parser.add_argument("--true_N", action="store_true",
-                            help="for stacked plots, plot N instead of n")
+                            help="plot mode (note these are custom-defined)")
+    parser.add_argument("--true_N", action='store_true',
+                            help="for plots involving N, use total number instead of avg. density")
     parser.add_argument("--figsize", type=int, nargs=2, default=FIGSIZE)
     args = parser.parse_args()
 
-    if args.L_sel is not None:
-        if args.mode in ("stack_mu", "flux_vs_U"):
-            raise RuntimeError("provide L_sel if using mu_stack or flux_vs_U")
-
-    if args.dens_sel is not None:
-        sel_mu, sel_val = parse_dens_sel(args.dens_sel)
-    elif args.mode == "flux_vs_U":
-        raise RuntimeError("provide dens_sel if using flux_vs_U")
-
-
     df = pd.read_pickle(args.loadname)
-    if args.L_sel is not None:
-        df = df[(df.Lx == args.L_sel[0]) & (df.Ly == args.L_sel[1])]
 
     # ===== ACTUAL PLOTTING =====
 
@@ -109,29 +136,28 @@ if __name__ == "__main__":
         fig, axs = plot_NE_vert_stack(df, param="mu", param_str="μ",
                                         dens=(not args.true_N), figsize=args.figsize)
 
-    # plot multiple dispersions on the same axes; each line is for a given
-    #   value of mu or N.
-    elif args.mode == "flux_vs_U":
-        Us = sorted(set(df.U))
-        fig, ax = plt.subplots(figsize=FIGSIZE)
-        for U in Us:
-            s = df.loc[df.U == U]
-            if sel_mu:
-                s = s.loc[s.mu == sel_val]
-            else:
-                s = s.loc[(s.N < sel_val+1) & (s.N > sel_val-1)]
-            s.loc[:,"E"] -= s["E"].min()
-            s.loc[:,"E"] /= s["E"].max()
-            ax.scatter(s["phi_x"], s["E"], label=f"U = {U}")
-            ax.set_xlabel("φ")
-            ax.set_ylabel("E / (maximum)")
-        plt.legend()
-
-    elif args.mode == "flux_vs_L":
+    elif args.mode == "stack_L":
         if not (df.Lx == df.Ly).all():
             raise NotImplementedError("flux_vs_L mode currently only supports square lattices")
         fig, axs = plot_NE_vert_stack(df, param="Lx", param_str="L",
                                         dens=(not args.true_N), figsize=args.figsize)
+
+    # plot multiple dispersions on the same axes; each line is for a given
+    #   value of whatever parameter.
+    elif args.mode == "mult_U":
+        sel = {}
+        fig, ax = plot_common_E(df, param="U", sel=sel, normalize_E=False,
+                                    base_phi=0.0,
+                                    figsize=args.figsize)
+
+    elif args.mode == "mult_L":
+        sel = {}
+        df = df[df.Lx == 4]
+        df = df[df.dE < 3]
+        fig, ax = plot_common_E(df, param="Lx", sel=sel, normalize_E=False,
+                                    base_phi=0.0, errorbars=True,
+                                    plot_reflected=False,
+                                    figsize=args.figsize)
 
     else:
         raise ValueError(f"mode {args.mode} not recognized")
