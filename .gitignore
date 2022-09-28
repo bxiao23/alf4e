@@ -5,6 +5,7 @@ obs/
 obs_remote/
 logs/
 plots/
+_pre_fall/
 *.pkl
 *.png
 *.log
